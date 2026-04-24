@@ -10,6 +10,7 @@ from app.models.category import Category
 from app.models.user import User
 from app.schemas.transaction import TransactionCreate, TransactionResponse
 
+# Routes for transactions CRUD
 router = APIRouter(prefix="/transactions", tags=["Transactions"])
 
 
@@ -19,6 +20,7 @@ def create_transaction(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Check if selected category belongs to current user
     category = db.query(Category).filter(
         Category.id == transaction_data.category_id,
         Category.user_id == current_user.id
@@ -27,6 +29,7 @@ def create_transaction(
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
+    # Create new transaction for current user
     transaction = Transaction(
         amount=transaction_data.amount,
         description=transaction_data.description,
@@ -46,6 +49,7 @@ def get_transactions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Get all transactions for current user
     return db.query(Transaction).filter(
         Transaction.user_id == current_user.id
     ).all()
@@ -58,6 +62,7 @@ def update_transaction(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Find transaction by id and user
     transaction = db.query(Transaction).filter(
         Transaction.id == transaction_id,
         Transaction.user_id == current_user.id
@@ -66,6 +71,7 @@ def update_transaction(
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
+    # Check if new category belongs to current user
     category = db.query(Category).filter(
         Category.id == transaction_data.category_id,
         Category.user_id == current_user.id
@@ -74,6 +80,7 @@ def update_transaction(
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
+    # Update transaction fields
     transaction.amount = transaction_data.amount
     transaction.description = transaction_data.description
     transaction.category_id = transaction_data.category_id
@@ -90,6 +97,7 @@ def delete_transaction(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Find transaction by id and user
     transaction = db.query(Transaction).filter(
         Transaction.id == transaction_id,
         Transaction.user_id == current_user.id
@@ -98,6 +106,7 @@ def delete_transaction(
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
+    # Delete transaction
     db.delete(transaction)
     db.commit()
 

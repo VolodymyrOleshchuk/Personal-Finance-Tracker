@@ -9,6 +9,7 @@ from app.models.category import Category
 from app.models.user import User
 from app.schemas.category import CategoryCreate, CategoryResponse
 
+# Routes for categories CRUD
 router = APIRouter(prefix="/categories", tags=["Categories"])
 
 
@@ -18,6 +19,7 @@ def create_category(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Check if category with same name already exists for this user
     existing_category = db.query(Category).filter(
         Category.name == category_data.name,
         Category.user_id == current_user.id
@@ -26,6 +28,7 @@ def create_category(
     if existing_category:
         raise HTTPException(status_code=400, detail="Category already exists")
 
+    # Create new category
     category = Category(
         name=category_data.name,
         type=category_data.type,
@@ -44,6 +47,7 @@ def get_categories(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Get all categories for current user
     return db.query(Category).filter(
         Category.user_id == current_user.id
     ).all()
@@ -56,6 +60,7 @@ def update_category(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Find category by id and user
     category = db.query(Category).filter(
         Category.id == category_id,
         Category.user_id == current_user.id
@@ -64,6 +69,7 @@ def update_category(
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
+    # Check duplicate name (except current category)
     existing_category = db.query(Category).filter(
         Category.name == category_data.name,
         Category.user_id == current_user.id,
@@ -73,6 +79,7 @@ def update_category(
     if existing_category:
         raise HTTPException(status_code=400, detail="Category already exists")
 
+    # Update fields
     category.name = category_data.name
     category.type = category_data.type
 
@@ -88,6 +95,7 @@ def delete_category(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Find category
     category = db.query(Category).filter(
         Category.id == category_id,
         Category.user_id == current_user.id
@@ -96,6 +104,7 @@ def delete_category(
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
+    # Delete category
     db.delete(category)
     db.commit()
 

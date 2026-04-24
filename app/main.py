@@ -11,16 +11,23 @@ from app.api.routes.categories import router as categories_router
 from app.api.routes.transactions import router as transactions_router
 from app.api.routes.analytics import router as analytics_router
 
+# Create FastAPI app
 app = FastAPI(title="Personal Finance Tracker")
 
+
+# Create database tables
 Base.metadata.create_all(bind=engine)
 
+
+# Register API routes
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(categories_router)
 app.include_router(transactions_router)
 app.include_router(analytics_router)
 
+
+# Health check endpoint
 @app.get("/")
 def root():
     return {"message": "Personal Finance Tracker API is running"}
